@@ -1,0 +1,312 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" >
+
+<head>
+  <title>Client DB Playground</title>
+  <style type="text/css">
+    body {
+      background-color: #000;
+      color: #aaa;
+    }
+    pre {
+      font-family: LucidaTypewriter, Lucida Console;
+      font-size: 9pt;
+    }
+    hr {
+      border: solid 1px #c00;
+    }
+  </style>
+  <script type="text/javascript" src="skiplist.js"></script>
+  <script type="text/javascript" src="util-sys.js"></script>
+  <script type="text/javascript" src="client-db.js"></script>
+  <script type="text/javascript">
+
+    //
+    // Utilities.
+    //
+
+    function writeDebug(msg) {
+      if (!writeDebug.debugConsole || writeDebug.debugConsole.closed) {
+        writeDebug.debugConsole = window.open("", "Debug Console", "width=600, height=300, resizable, scrollbars");
+        writeDebug.debugConsole.document.open("text/plain");
+      }
+      writeDebug.debugConsole.document.writeln(msg);
+      writeDebug.debugConsole.scrollTo(0, 100000);
+      writeDebug.debugConsole.focus();
+    }
+
+    function writeObject(obj) {
+      writeln("-- OBJECT: " + obj);
+      for (p in obj) {
+        writeln(p + " = " + obj[p]);
+      }
+    }
+
+    self.onerror = function(msg, url, line) {
+      writeDebug("-- ERROR: " + msg + ", line " + line);
+    }
+
+    function hr() {
+      document.write("<hr/>");
+    }
+
+
+    //
+    // Fubar DB.
+    //
+/*
+    function getProductCategories(db, productId) {
+
+      var pcs = db.productCategories.select(function(pc) {
+        return pc.get("productId") == productId;
+      });
+
+      var ret = new Relation();
+      for (id in pcs.data) {
+        ret.insert(db.categories.get(pcs.data[id].get("categoryId")));
+      }
+
+      return ret;
+    }
+
+    function FubarDb(baseUri) {
+      this.init(baseUri);
+      this.products = new Relation();
+      this.categories = new Relation();
+      this.productCategories = new Relation();
+    }
+
+    FubarDb.prototype = Database.prototype;
+
+
+    var db = new FubarDb("http://arthurz-dev:8080/data");
+
+    db.products.populate([
+      { id: "product/1", title: "Product-1" },
+      { id: "product/2", title: "Product-2" },
+      { id: "product/3", title: "Product-3" }
+    ]);
+
+    db.categories.populate([
+      { id: "category/1", title: "Category-1" },
+      { id: "category/2", title: "Category-2" },
+      { id: "category/3", title: "Category-3" }
+    ]);
+
+    db.productCategories.populate([
+      { id: "p-c/1", productId: "product/1", categoryId: "category/1" },
+      { id: "p-c/2", productId: "product/1", categoryId: "category/2" },
+      { id: "p-c/3", productId: "product/2", categoryId: "category/1" }
+    ]);
+*/
+    function onLoad() {
+    }
+
+    function writeln(str) {
+      document.write(str + "\n");
+    }
+
+  </script>
+</head>
+
+<body onload="javascript:onLoad()">
+
+  <pre><script type="text/javascript">
+
+function updateConfirmation(oldX, x) { writeln("Updated to " + x); }
+
+// Simple type test.
+
+var ID = new StringType();
+var Title = new StringType();
+
+id = ID.createValue("id-1");
+title = Title.createValue("title-1");
+
+writeln(id.get());
+
+d = new EventSink(id);
+d.afterUpdate = updateConfirmation;
+
+id.set("id-1-modified");
+writeln(id.get());
+
+// Skip list test.
+hr();
+
+var sl = new SkipList();
+for (var i = 1; i <= 256; ++i) { sl.insert(i, i); }
+writeln(sl.toString());
+
+writeln("Deleting odd values:");
+for (var i = 1; i <= 256; i += 2) { sl.remove(i); }
+writeln(sl.toString());
+
+/*
+// copyObj test
+hr();
+id2 = new Object();
+copyObj(id2, id);
+writeObject(id2);
+*/
+
+// Tuple test.
+hr();
+
+var Product = new TupleType(
+  { name: "id", type: ID },
+  { name: "title", type: Title });
+
+product = Product.createValue(["id-2", "title-2"]);
+writeln(product);
+
+d = new EventSink(product);
+d.afterAttributeUpdate = function(i, oldX, x) { writeln("Updated " + i + " to " + x); }
+product.title().set("title-2-modified");
+writeln(product);
+
+// Relation test.
+hr();
+
+var products = new RelationType(Product, "id").createValue();
+
+var product1 = Product.createValue(null);
+product1.id().set("id-1");
+product1.title().set("title-1");
+products.insert(product1);
+
+products.insert(product);
+products.insert(Product.createValue(["id-3", "title-3"]));
+
+writeln(products);
+writeln(products.get("id-1"));
+
+// Selection test.
+hr();
+
+writeln("Selection test:");
+var oddProducts = products.select(function(p) {
+  return parseInt(p.id().get().charAt(p.id().get().length - 1)) % 2 == 1;
+});
+
+products.insert(Product.createValue(["id-4", "title-4"]));
+products.insert(Product.createValue(["id-5", "title-5"]));
+products.remove("id-3");
+
+writeln(oddProducts);
+
+writeln(oddProducts.select(function(p) {
+  return parseInt(p.id().get().charAt(p.id().get().length - 1)) % 5 == 1;
+}));
+
+// Projection test.
+hr(); writeln("Projection and selection test.\n");
+
+writeln("Simple attribute projection:");
+var prjProductId = oddProducts.project([{ name: "id", type: ID, primaryKey: true }])
+writeln(prjProductId);
+prjProductId.insert(prjProductId.type.generatorType.createValue(["id-9"]));
+writeln(prjProductId);
+writeln(oddProducts);
+
+writeln("Mapping projection:");
+var prjProducts = oddProducts.project(
+  [{ name: "id", type: ID, primaryKey: true },
+   { name: "newTitle", type: new StringType() }],
+  function(product) {
+    return {
+      id: product.id().get(),
+      newTitle: maybe(product.title().get(), function(title) { return title + "-NEW"; })
+    };
+  },
+  identity,
+  function(nproduct) {
+    return {
+      id: nproduct.id().get(),
+      title: nproduct.newTitle().get().substring(0, nproduct.newTitle().get().length - 4)
+    };
+  });
+
+writeln(prjProducts);
+
+writeln("Selection and projection:");
+writeln(prjProducts.select(function(p) {
+  return parseInt(p.id().get().charAt(p.id().get().length - 1)) % 5 == 1
+}));
+
+writeln(prjProducts.get("id-1"));
+writeln("");
+
+writeln("Insertion through a projection:");
+prjProducts.insert(prjProducts.type.generatorType.createValue(["id-7", "title-7-NEW"]));
+writeln(products);
+
+writeln("Update through a projection:");
+prjProducts.get("id-1").newTitle().set("TITLE-1-MODIFIED-NEW");
+writeln(prjProducts.get("id-1"));
+writeln(products);
+
+// Secondary indices.
+hr(); writeln("Secondary index test:");
+
+var Category = new TupleType(
+  { name: "id", type: ID },
+  { name: "label", type: new StringType() },
+  { name: "parentCategoryId", type: ID });
+
+var categories = new RelationType(Category, "id", ["parentCategoryId"]).createValue();
+
+categories.insert(Category.createValue(["cat-id-1", "Category-1", null]));
+categories.insert(Category.createValue(["cat-id-2", "Category-1.1", "cat-id-1"]));
+categories.insert(Category.createValue(["cat-id-3", "Category-2", null]));
+
+var ProductCategory = new TupleType(
+  { name: "id", type: ID },
+  { name: "productId", type: ID },
+  { name: "categoryId", type: ID });
+
+var productCategories =
+  new RelationType(ProductCategory, "id", ["productId", "categoryId"]).
+  createValue();
+
+productCategories.insert(ProductCategory.createValue([ "pc-id-1", "id-1", "cat-id-1" ]));
+productCategories.insert(ProductCategory.createValue([ "pc-id-2", "id-1", "cat-id-2" ]));
+productCategories.insert(ProductCategory.createValue([ "pc-id-3", "id-2", "cat-id-1" ]));
+
+writeln(products + categories + productCategories);
+
+doArray(productCategories.getSecondary("productId", "id-1"), function(t) { writeln(t); });
+
+writeln("Updating sk value.");
+productCategories.get("pc-id-3").productId().set("id-1");
+doArray(productCategories.getSecondary("productId", "id-1"), function(t) { writeln(t); });
+
+writeln("Deleting PC value.");
+productCategories.remove("pc-id-2");
+doArray(productCategories.getSecondary("productId", "id-1"), function(t) { writeln(t); });
+
+// Join test.
+hr(); writeln("Join test.");
+
+productCategories.insert(ProductCategory.createValue([ "pc-id-4", "id-2", "cat-id-1" ]));
+var joined = productCategories.join("pc_", "p_", products, "productId");
+writeln(products + productCategories + joined);
+
+var projectJoined = joined.project(
+  [{ name: "title", type: Title, primaryKey: true }],
+  function(t) { return { title: t.p_title().get() }; },
+  null, null);
+writeln(projectJoined);
+
+var selectProjectedJoined = projectJoined.select(
+  function(p) { return p.title().get()[6] > '1'; });
+writeln(selectProjectedJoined);
+
+</script>
+
+  </pre>
+
+</body>
+
+</html>
+

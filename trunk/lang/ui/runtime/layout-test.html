@@ -1,0 +1,53 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" >
+
+<head>
+  <title>Layout Playground</title>
+  <style type="text/css">
+    div.my-box {
+      border: solid 1px #c00;
+    }
+
+    body {
+      margin: 0;
+    }
+
+    body > div {
+      top: 0;
+      bottom: 0;
+      left: 0;
+      right: 0;
+    }
+  </style>
+  <link rel="stylesheet" href="util.css" type="text/css"/>
+  <script type="text/javascript" src="./util-ui.js"> </script>
+  <script type="text/javascript" src="./layout.js"> </script>
+
+  <script type="text/javascript">
+    function onLoad() {
+
+      var hl = createHorizontalLayout([
+        { box: createDiv("my-box", "leftmost"), size: 4 },
+        { box: createDiv("my-box", "left-area"), flex: 1, minSize: 5 },
+        { box: createDiv("my-box", "middle"), size: 4 },
+        { box: createDiv("my-box", "right-area"), flex: 2, minSize: 5 },
+        { box: createDiv("my-box", "rightmost"), size: 6 }
+      ], 0.5);
+
+      var vl = createVerticalLayout([
+        { box: createDiv("my-box", "header"), size: 1.5 },
+        { box: hl, flex: 1, minSize: 5 },
+        { box: createDiv("my-box", "middle"), size: 1.5 },
+        { box: createDiv("my-box", "lower-area"), flex: 2, minSize: 5 },
+        { box: createDiv("my-box", "footer"), size: 1.5 }
+      ], 0.5);
+
+      document.body.appendChild(vl);
+    }
+  </script>
+</head>
+
+<body onload="onLoad()">
+</body>
+
+</html>

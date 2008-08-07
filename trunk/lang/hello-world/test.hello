@@ -1,0 +1,9 @@
+;; -*- mode: lisp; -*-
+
+(in-package :com.google.hello-world)
+
+(def-person pawel (name "Pawel F.") (phone-number "+14255551212"))
+(def-person arthur (name "Arthur Z.") (phone-number "+12065551212"))
+
+(group pawel arthur (person (name "Bill") (phone-number "+16505551212")))
+(def-group fubar pawel)
