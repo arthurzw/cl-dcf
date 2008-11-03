@@ -10,22 +10,23 @@
   :description "Catharsis"
   :long-description "Allows the definition of multiple domain languages that process a very high-level system definition into a set of programs in various target languages, such as Java, JavaScript, HTML, CSS. It also generates documentation."
   :depends-on (google-common split-sequence)
-  :serial t				; The dependencies are linear.
+  :serial t                             ; The dependencies are linear.
   :components ((:file "packages")
-	       (:module core
-			:serial t
-			:components ((:file "zexp")
-				     (:file "spath")
-				     (:file "env")
-				     (:file "parser-runtime")
-				     (:file "lang-def.gen")
-				     (:file "sexp-parser")
-				     (:file "parser-compiler")
-				     (:file "source-gen")
-				     (:file "xml-gen")
-				     (:file "grammar")))
-	       (:module lang
-			:serial t
-			:components ((:file "cpp")
-				     (:file "java")
-				     (:file "javascript")))))
+               (:module core
+                        :serial t
+                        :components ((:file "zexp")
+                                     (:file "spath")
+                                     (:file "env")
+                                     (:file "parser-runtime")
+                                     (:file "lang-def.gen")
+                                     (:file "sexp-parser")
+                                     (:file "parser-compiler")
+                                     (:file "source-gen")
+                                     (:file "protobuf-text-gen")
+                                     (:file "xml-gen")
+                                     (:file "grammar")))
+               (:module lang
+                        :serial t
+                        :components ((:file "cpp")
+                                     (:file "java")
+                                     (:file "javascript")))))

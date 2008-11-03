@@ -514,45 +514,45 @@
 ;;; Entry point.
 (defun generate-java (package &key output-dir create-dir-structure print-filenames)
   (flet ((gen-package-path-string (separator)
-	   (apply (compose #'string-downcase #'string+)
-		  (add-separators separator
-				  (mapcar #'(lambda (s)
-					      (remove-if-not #'alphanumericp (symbol-name s)))
-					  (cadr (spath package :value)))))))
+           (apply (compose #'string-downcase #'string+)
+                  (add-separators separator
+                                  (mapcar #'(lambda (s)
+                                              (remove-if-not #'alphanumericp (symbol-name s)))
+                                          (cadr (spath package :value)))))))
     (let ((package-name (gen-package-path-string "."))
-	  (package-dir (parse-namestring (string+ (if create-dir-structure
-						      (gen-package-path-string "/")
-						      ".")
-						  "/")))
-	  (output-dir (or (when output-dir
-			    (if (eql (last output-dir) #\\)
-				output-dir
-				(string+ output-dir "/")))
-			  #p"./")))
+          (package-dir (parse-namestring (string+ (if create-dir-structure
+                                                      (gen-package-path-string "/")
+                                                      ".")
+                                                  "/")))
+          (output-dir (or (when output-dir
+                            (if (eql (last output-dir) #\\)
+                                output-dir
+                                (string+ output-dir "/")))
+                          #p"./")))
       (mapc #'(lambda (interface-or-class)
-		(let ((filename
-		       (merge-pathnames
-			(merge-pathnames package-dir output-dir) ; Final directory.
-			(parse-namestring                        ; Final filename: ClassName.java
-			 (string+
-			  (reduce #'string+
-				  (mapcar #'string-capitalize
-					  (split-sequence:split-sequence
-					   #\-
-					   (symbol-name (spath interface-or-class :name)))))
-			  ".java")))))
-		  (if print-filenames
-		      (format t "~&~A~&" (file-namestring filename))
-		      (progn
-			(ensure-directories-exist filename :verbose t)
-			(format t "Generating ~A...~%" (file-namestring filename))
-			(with-open-file (class-file filename :direction :output
-						    :if-exists :supersede)
-			  (let ((gen (make-java-source-generator class-file)))
-			    (emit-list gen "package" package-name 'semicolon 'vertical-space)
-			    (generate-sexp gen #'java-parse interface-or-class)))))))
-	    (append (spath package 'interface*)
-		    (spath package 'class*))))))
+                (let ((filename
+                       (merge-pathnames
+                        (merge-pathnames package-dir output-dir) ; Final directory.
+                        (parse-namestring                        ; Final filename: ClassName.java
+                         (string+
+                          (reduce #'string+
+                                  (mapcar #'string-capitalize
+                                          (split-sequence:split-sequence
+                                           #\-
+                                           (symbol-name (spath interface-or-class :name)))))
+                          ".java")))))
+                  (if print-filenames
+                      (format t "~&~A~&" (file-namestring filename))
+                      (progn
+                        (ensure-directories-exist filename :verbose t)
+                        (format t "Generating ~A...~%" (file-namestring filename))
+                        (with-open-file (class-file filename :direction :output
+                                                    :if-exists :supersede)
+                          (let ((gen (make-java-source-generator class-file)))
+                            (emit-list gen "package" package-name 'semicolon 'vertical-space)
+                            (generate-sexp gen #'java-parse interface-or-class)))))))
+            (append (spath package 'interface*)
+                    (spath package 'class*))))))
 
 (export 'generate-java)
 

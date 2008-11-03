@@ -178,36 +178,36 @@
 
 (defun emit-token (gen token &optional (space-required-before t) (space-required-after t) (may-wrap t))
   (with-slots (keyword-overrides current-col max-line-width
-	       space-required pascal-case upper-case lower-case lower-case_ suppress-wrap) gen
+                                 space-required pascal-case upper-case lower-case lower-case_ suppress-wrap) gen
     (progn
-
+      
       ;; Apply suppress-wrap.
       (when suppress-wrap
-	(setf may-wrap nil)
-	(setf suppress-wrap nil))
+        (setf may-wrap nil)
+        (setf suppress-wrap nil))
 
       ;; If a keyword is specified, convert it to an appropriate string.
       (when (keywordp token)
-	(aif (find token keyword-overrides :key #'first)
-	     (setf token (second it))
-	     (cond (upper-case (setf token (symbol->upper-case-string token)))
-		   (lower-case (setf token (symbol->lower-case-string token)))
-		   (lower-case_ (setf token (symbol->lower-case_-string token)))
-		   (pascal-case (setf token (symbol->pascal-string token)))
-		   (t (setf token (symbol->camel-string token))))))
+        (aif (find token keyword-overrides :key #'first)
+             (setf token (second it))
+             (cond (upper-case (setf token (symbol->upper-case-string token)))
+                   (lower-case (setf token (symbol->lower-case-string token)))
+                   (lower-case_ (setf token (symbol->lower-case_-string token)))
+                   (pascal-case (setf token (symbol->pascal-string token)))
+                   (t (setf token (symbol->camel-string token))))))
 
       ;; Honor explicit casing instructions.
       (when (symbolp token)
-	(cond ((eq (symbol-package token) (find-package 'upper-case))
-	       (setf token (symbol->upper-case-string token)))
-	      ((eq (symbol-package token) (find-package 'lower-case))
-	       (setf token (symbol->lower-case-string token)))
-	      ((eq (symbol-package token) (find-package 'lower-case_))
-	       (setf token (symbol->lower-case_-string token)))
-	      ((eq (symbol-package token) (find-package 'pascal-case))
-	       (setf token (symbol->pascal-string token)))
-	      ((eq (symbol-package token) (find-package 'camel-case))
-	       (setf token (symbol->camel-string token)))))
+        (cond ((eq (symbol-package token) (find-package 'upper-case))
+               (setf token (symbol->upper-case-string token)))
+              ((eq (symbol-package token) (find-package 'lower-case))
+               (setf token (symbol->lower-case-string token)))
+              ((eq (symbol-package token) (find-package 'lower-case_))
+               (setf token (symbol->lower-case_-string token)))
+              ((eq (symbol-package token) (find-package 'pascal-case))
+               (setf token (symbol->pascal-string token)))
+              ((eq (symbol-package token) (find-package 'camel-case))
+               (setf token (symbol->camel-string token)))))
 
       ;; Reset case toggles because they only potentially applies to the subsequent token.
       (when pascal-case (setf pascal-case nil))
@@ -217,13 +217,13 @@
 
       ;; If a number is supplied, convert it to a string.
       (when (numberp token)
-	(setf token (format nil "~A" token)))
+        (setf token (format nil "~A" token)))
 
       ;; Check for wrap-around.
       (when (and may-wrap
-		 (> (+ current-col (length token) 1) ; The additional 1 accounts for a possible space.
-		    max-line-width))
-	(emit-line-wrap gen))
+                 (> (+ current-col (length token) 1) ; The additional 1 accounts for a possible space.
+                    max-line-width))
+        (emit-line-wrap gen))
 
       ;; Deal with spaces, and emit the token.
       (when space-required-before (emit-space-required gen))
