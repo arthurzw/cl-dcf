@@ -44,18 +44,18 @@ into branch nodes.
    The second returned value is the value of the last node encountered."
   (with-slots (value branches) trie
     (if (null key-list)
-	(values trie value) ; No more keys to process--return the current node.
-	(destructuring-bind (next-key &rest remaining-keys) key-list
-	  (progn
-	    (unless (gethash next-key branches)
-	      ;; Not found. Create a new branch or fail.
-	      (if create-new-branches
-		  (setf (gethash next-key branches) (make-instance 'trie))
-		  (return-from navigate-trie (values nil value))))
-	    ;; Descend down the tree.
-	    (navigate-trie (gethash next-key branches)
-			   remaining-keys
-			   :create-new-branches create-new-branches))))))
+        (values trie value) ; No more keys to process--return the current node.
+        (destructuring-bind (next-key &rest remaining-keys) key-list
+          (progn
+            (unless (gethash next-key branches)
+              ;; Not found. Create a new branch or fail.
+              (if create-new-branches
+                  (setf (gethash next-key branches) (make-instance 'trie))
+                  (return-from navigate-trie (values nil value))))
+            ;; Descend down the tree.
+            (navigate-trie (gethash next-key branches)
+                           remaining-keys
+                           :create-new-branches create-new-branches))))))
 
 
 (defgeneric get-trie (key-list trie)
@@ -101,14 +101,14 @@ into branch nodes.
 
 (test "trie"
       '((nil 1 2 3 nil nil nil 4 nil)
-	(nil nil 1 2 2))
+        (nil nil 1 2 2))
       (let ((trie (make-instance 'trie)))
-	(bulk-insert-trie '(((a) 1)
-			    ((a a) 2)
-			    ((a b) 3)
-			    ((b a) 4))
-			  trie)
-	(list (mapcar #'(lambda (key-list) (get-trie key-list trie))
-		      '(nil (a) (a a) (a b) (a c) (a c d) (b) (b a) (b a e)))
-	      (mapcar #'(lambda (key-list) (lookup-prefix-in-trie key-list trie))
-		      '(nil (z) (a) (a a) (a a a))))))
+        (bulk-insert-trie '(((a) 1)
+                            ((a a) 2)
+                            ((a b) 3)
+                            ((b a) 4))
+                          trie)
+        (list (mapcar #'(lambda (key-list) (get-trie key-list trie))
+                      '(nil (a) (a a) (a b) (a c) (a c d) (b) (b a) (b a e)))
+              (mapcar #'(lambda (key-list) (lookup-prefix-in-trie key-list trie))
+                      '(nil (z) (a) (a a) (a a a))))))

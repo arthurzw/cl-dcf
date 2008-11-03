@@ -8,6 +8,7 @@
   (:shadowing-import-from :com.google.common :comma)
   (:export :?  :compile-language  :parse-program  :generate-sexp  :post-process
 	   :lookup-def  :parent  :id  :env  :read-zexp-file
+     :make-protobuf-text-generator  :emit-protobuf-text
 	   :make-xml-generator  :parse-xml-node  :emit-xml-node  :xml-ns-alias  :xml-ns-uri  :xml-tag-case
 	   :def-internal-type  :def-zexp-type  :def-zexp-form  :def-sexp-form  :def-ir-class  :def-prop
 	   :internal-type  :zexp-type  :zexp-form  :sexp-form  :syntax  :end-of-list  :ir-class  :ir-overlay

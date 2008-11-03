@@ -5,8 +5,8 @@
   "Recursively applies function fn to all members of tree t."
   (mapcar #'(lambda (x)
               (if (listp x)
-		  (maptree fn x)
-		  (funcall fn x)))
+                  (maptree fn x)
+                  (funcall fn x)))
           tree))
 
 (export 'maptree)
@@ -22,15 +22,15 @@
    If key is specified, then this function is applied before performing the comparison.
    The found item is returned."
   (reduce #'(lambda (found-item x)
-	      (if found-item
-		  found-item
-		  (if (listp x)
-		      (findtree item x :test test :key key)
-		      (when (funcall test
-				     (if key (funcall key x) x)
-				     item)
-			x))))
-	  (cons nil tree)))
+              (if found-item
+                  found-item
+                  (if (listp x)
+                      (findtree item x :test test :key key)
+                      (when (funcall test
+                                     (if key (funcall key x) x)
+                                     item)
+                        x))))
+          (cons nil tree)))
 
 (export 'findtree)
 
@@ -61,9 +61,9 @@ we're redefining the constant). This macro does the right thing."
 (test "hashtable->list"
       '((1 nil) (2 (2)))
       (let ((ht (make-hash-table)))
-	(setf (gethash 1 ht) nil)
-	(setf (gethash 2 ht) '(2))
-	(hashtable->list ht)))
+        (setf (gethash 1 ht) nil)
+        (setf (gethash 2 ht) '(2))
+        (hashtable->list ht)))
 
 
 (defun list->hashtable (list)
@@ -96,16 +96,16 @@ we're redefining the constant). This macro does the right thing."
   "Implements mapcar with an accumulator. The supplied function fn takes two
    arguments: (value acc) and returns (values mapped-value acc)."
   (labels ((mapcar-acc-rec (fn list acc-result acc-fn)
-	     (cond ((null list) (values acc-result acc-fn))
-		   (t (multiple-value-bind
-			    (mapped-value acc-fn2)
-			  (funcall fn (car list) acc-fn)
-			(mapcar-acc-rec fn
-					(cdr list)
-					(cons mapped-value acc-result)
-					acc-fn2))))))
+             (cond ((null list) (values acc-result acc-fn))
+                   (t (multiple-value-bind
+                            (mapped-value acc-fn2)
+                          (funcall fn (car list) acc-fn)
+                        (mapcar-acc-rec fn
+                                        (cdr list)
+                                        (cons mapped-value acc-result)
+                                        acc-fn2))))))
     (multiple-value-bind (mapped-list final-acc)
-	(mapcar-acc-rec fn list '() acc)
+        (mapcar-acc-rec fn list '() acc)
       (values (nreverse mapped-list) final-acc))))
 
 (export 'mapcar-acc)
@@ -113,20 +113,20 @@ we're redefining the constant). This macro does the right thing."
 (test "mapcar-acc"
       '((2 4 6 8) 4)
       (multiple-value-bind (mapped-list final-acc)
-	  (mapcar-acc #'(lambda (x acc) (values (* x 2) (1+ acc)))
-		      '(1 2 3 4)
-		      0)
-	(list mapped-list final-acc)))
+          (mapcar-acc #'(lambda (x acc) (values (* x 2) (1+ acc)))
+                      '(1 2 3 4)
+                      0)
+        (list mapped-list final-acc)))
 
 
 (defun replace-nth (n list value)
   "Returns a shallow copy of the list with n-th element replaced with the given value."
   (mapcar-acc #'(lambda (x index)
-		  (values
-		   (if (= index n) value x)
-		   (1+ index)))
-	      list
-	      0))
+                  (values
+                   (if (= index n) value x)
+                   (1+ index)))
+              list
+              0))
 
 (export 'replace-nth)
 
@@ -141,8 +141,8 @@ we're redefining the constant). This macro does the right thing."
 (defun take (n list)
   "Returns the first n items of the list."
   (labels ((take-rec (n list acc)
-	     (if (or (null list) (<= n 0)) (nreverse acc)
-		 (take-rec (1- n) (cdr list) (cons (car list) acc)))))
+             (if (or (null list) (<= n 0)) (nreverse acc)
+                 (take-rec (1- n) (cdr list) (cons (car list) acc)))))
     (take-rec n list nil)))
 
 (export 'take)
@@ -179,8 +179,8 @@ we're redefining the constant). This macro does the right thing."
 (defun integer-list (from to &optional (step 1))
   "Returns a list of integers in the range [from, to], according to the specified step."
   (loop for i = from then (+ i step)
-	until (> i to)
-	collecting i))
+     until (> i to)
+     collecting i))
 
 (export 'integer-list)
 
@@ -195,8 +195,8 @@ we're redefining the constant). This macro does the right thing."
 
 (defun transpose (matrix)
   (when (find-if-not #'null matrix)
-      (cons (mapcar #'first matrix)
-	    (transpose (mapcar #'rest matrix)))))
+    (cons (mapcar #'first matrix)
+          (transpose (mapcar #'rest matrix)))))
 
 
 (defun zip (&rest lists)
@@ -255,31 +255,31 @@ we're redefining the constant). This macro does the right thing."
 (defun object->sexp (obj &key suppress-types suppress-properties)
   "Converts arbitrary CLOS objects into s-expressions that can easily be used in tests."
   (if (and (subtypep (type-of obj) 'standard-object)
-	   (find obj *object->sexp-visited-objects*))
+           (find obj *object->sexp-visited-objects*))
       :recursive-reference
       (let ((*object->sexp-visited-objects* (cons obj *object->sexp-visited-objects*)))
-	(cond ((find (type-of obj) suppress-types) :suppressed)
-	      ((subtypep (type-of obj) 'standard-object)
-	       (multiple-value-bind (instance slots)
-		   (make-load-form-saving-slots obj)
-		 (let ((class (cadr (cadadr instance)))
-		       (bound-slots (mapcar #'(lambda (s)
-						(list (second (first (last (second s))))
-						      (object->sexp (second (third s))
-								    :suppress-types suppress-types
-								    :suppress-properties suppress-properties)))
-					    (remove 'slot-makunbound (rest slots) :key #'first))))
-		   (list* class
-			  (sort (remove-if #'(lambda (slot)
-					       (find (first slot) suppress-properties))
-					   bound-slots)
-				#'string< :key (compose #'symbol-name #'first))))))
-	      ((null obj) nil)
-	      ((listp obj)
-	       (mapcar #'(lambda (obj) (object->sexp obj
-						     :suppress-types suppress-types
-						     :suppress-properties suppress-properties)) obj))
-	      (t obj)))))
+        (cond ((find (type-of obj) suppress-types) :suppressed)
+              ((subtypep (type-of obj) 'standard-object)
+               (multiple-value-bind (instance slots)
+                   (make-load-form-saving-slots obj)
+                 (let ((class (cadr (cadadr instance)))
+                       (bound-slots (mapcar #'(lambda (s)
+                                                (list (second (first (last (second s))))
+                                                      (object->sexp (second (third s))
+                                                                    :suppress-types suppress-types
+                                                                    :suppress-properties suppress-properties)))
+                                            (remove 'slot-makunbound (rest slots) :key #'first))))
+                   (list* class
+                          (sort (remove-if #'(lambda (slot)
+                                               (find (first slot) suppress-properties))
+                                           bound-slots)
+                                #'string< :key (compose #'symbol-name #'first))))))
+              ((null obj) nil)
+              ((listp obj)
+               (mapcar #'(lambda (obj) (object->sexp obj
+                                                     :suppress-types suppress-types
+                                                     :suppress-properties suppress-properties)) obj))
+              (t obj)))))
 
 (export 'object->sexp)
 
@@ -289,8 +289,8 @@ we're redefining the constant). This macro does the right thing."
   (destructuring-bind (vars vals)
       (unzip vars)
     `(labels ((,name ,vars
-	       ,@body))
-      (,name ,@vals))))
+                ,@body))
+       (,name ,@vals))))
 
 (export 'nlet)
 
@@ -311,8 +311,8 @@ we're redefining the constant). This macro does the right thing."
 
 (defmacro make-instance-of-superclass (class superclass &rest rest)
   `(if (subtypep ,class ,superclass)
-    (make-instance ,class ,@rest)
-    (error "~A is not a subclass of ~A." ,class ,superclass)))
+       (make-instance ,class ,@rest)
+       (error "~A is not a subclass of ~A." ,class ,superclass)))
 
 (export 'make-instance-of-superclass)
 
@@ -346,25 +346,25 @@ we're redefining the constant). This macro does the right thing."
    The return value consists of pairs (key-value matching-list), where matching-list
    is the list of all values from the original sequence that maps to the given key."
   (let ((hash-table (make-hash-table :test test))
-	(result nil))
+        (result nil))
     (reduce #'(lambda (_ x)
-		(declare (ignore _))
-		(let ((key (funcall key-fn x)))
-		  (if (gethash key hash-table)
-		      (append1f (gethash key hash-table) x)
-		      (setf (gethash key hash-table) (list x)))))
-	    seq
-	    :initial-value nil)
+                (declare (ignore _))
+                (let ((key (funcall key-fn x)))
+                  (if (gethash key hash-table)
+                      (append1f (gethash key hash-table) x)
+                      (setf (gethash key hash-table) (list x)))))
+            seq
+            :initial-value nil)
     (maphash #'(lambda (key value)
-		 (append1f result (list key value)))
-	     hash-table)
+                 (append1f result (list key value)))
+             hash-table)
     result))
 
 (export 'group-by)
 
 (test "group-by"
       '((nil (0 3 6  9))
-	(1   (1 4 7 10))
-	(2   (2 5 8)))
+        (1   (1 4 7 10))
+        (2   (2 5 8)))
       (group-by #'(lambda (x) (let ((mod (mod x 3))) (if (= mod 0) nil mod)))
-		(integer-list 0 10)))
+                (integer-list 0 10)))

@@ -507,13 +507,13 @@
 (defun generate-file (program filename &key output-dir)
   (if output-dir
       (progn
-	(format t "Generating ~A...~%" filename)
-	(with-open-file (f (concatenate 'string output-dir "/" filename)
-			   :direction :output
-			   :if-exists :supersede)
-	  (generate-file-internal program :file f)))
+        (format t "Generating ~A...~%" filename)
+        (with-open-file (f (concatenate 'string output-dir "/" filename)
+                           :direction :output
+                           :if-exists :supersede)
+          (generate-file-internal program :file f)))
       (progn
-	(format t "~&~%~%>>>>>>>>>> ~A~%~%" filename)
-	(generate-file-internal program))))
+        (format t "~&~%~%>>>>>>>>>> ~A~%~%" filename)
+        (generate-file-internal program))))
 
 (export 'generate-file)

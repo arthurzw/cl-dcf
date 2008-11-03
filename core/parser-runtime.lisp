@@ -108,30 +108,30 @@
       (macroexpand-zexp zexp)
     (destructuring-bind (id tag . body) (normalize-zexp macroexpanded-zexp)
       (let* ((*sexp-expanded* (or *sexp-expanded* sexp-expanded))
-	     (*def-stack* (cons tag *def-stack*))
-	     (class (lookup-class *def-stack*)))
-	(unless class
-	  (error "Unexpected expression ~S." zexp))
-	(let ((obj (make-instance class :id id :parent parent)))
-	  (setf (gethash zexp *sexp->obj-map*) obj)
-	  (let ((*env* (or (local-env obj) *env*))) ; Use a local environment if one is defined.
-	    (setf (normalized-body obj)
-		  (mapcar
-		   #'(lambda (exp)
-		       (if (listp exp)
-			   (destructuring-bind (prop-id prop-tag . prop-body)
-			       (normalize-zexp exp)
-			     (declare (ignore prop-id))
-			     (if (find prop-tag (prop-tags obj))
-				 (progn
-				   (parse-zexp-prop-value-phase-1 obj (first prop-body))
-				   (list* nil prop-tag prop-body))
-				 (let ((child-obj (parse-zexp-phase-1 exp :parent obj)))
-				   (list* (id child-obj) prop-tag prop-body))))
-			   exp))
-		   body)))
-	  (store-def obj)
-	  obj)))))
+             (*def-stack* (cons tag *def-stack*))
+             (class (lookup-class *def-stack*)))
+        (unless class
+          (error "Unexpected expression ~S." zexp))
+        (let ((obj (make-instance class :id id :parent parent)))
+          (setf (gethash zexp *sexp->obj-map*) obj)
+          (let ((*env* (or (local-env obj) *env*))) ; Use a local environment if one is defined.
+            (setf (normalized-body obj)
+                  (mapcar
+                   #'(lambda (exp)
+                       (if (listp exp)
+                           (destructuring-bind (prop-id prop-tag . prop-body)
+                               (normalize-zexp exp)
+                             (declare (ignore prop-id))
+                             (if (find prop-tag (prop-tags obj))
+                                 (progn
+                                   (parse-zexp-prop-value-phase-1 obj (first prop-body))
+                                   (list* nil prop-tag prop-body))
+                                 (let ((child-obj (parse-zexp-phase-1 exp :parent obj)))
+                                   (list* (id child-obj) prop-tag prop-body))))
+                           exp))
+                   body)))
+          (store-def obj)
+          obj)))))
 
 (defun parse-zexp-phase-2 (obj)
   "Phase 2 of z-expression parsing: property parsing and validation."
