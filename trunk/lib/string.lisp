@@ -28,6 +28,31 @@
 		("str1")
 		("str1" "str2" "str3"))))
 
+(defun string-case-fun (keyform cases)
+  `(cond ,@(mapcar #'(lambda (case)
+                       (destructuring-bind (form body) case
+                         (list
+                          (if (eq form 'otherwise)
+                              t
+                              `(string= ,keyform ,form))
+                          body)))
+                   cases)))
+
+(test "string-case-fun"
+      '(cond
+        ((string= str-keyform case1) value1)
+        ((string= str-keyform case2) value2)
+        (t value3))
+      (string-case-fun 'str-keyform
+                       '((case1 value1)
+                         (case2 value2)
+                         (otherwise value3))))
+
+(defmacro string-case (keyform &body cases)
+  (string-case-fun keyform cases))
+
+(export 'string-case)
+
 (defun symbol-name-k (s)
   "Returns the name of the symbol s, including the leading ':' if s is a keyword."
   (let ((sym-name (symbol-name s)))
