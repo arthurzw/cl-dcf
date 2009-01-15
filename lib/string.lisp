@@ -11,13 +11,19 @@
       (string+ "a" "b" "c"))
 
 
-(defun concatenate-strings-with-spaces (&rest strings)
-  "Appends the supplied strings together, adding spaces in-between."
+(defun concatenate-strings-with-separator (separator &rest strings)
+  "Appends the supplied strings together, adding a separator in-between."
   (nlet rec ((acc "") (strings strings))
     (cond ((null strings) acc)
 	  ((null (rest strings)) (string+ acc (first strings)))
-	  (t (rec (string+ acc (first strings) " ")
-		  (rest strings))))))
+	  (t (rec (string+ acc (first strings) separator)
+            (rest strings))))))
+
+(export 'concatenate-strings-with-separator)
+
+
+(defun concatenate-strings-with-spaces (&rest strings)
+  (apply #'concatenate-strings-with-separator " " strings))
 
 (export 'concatenate-strings-with-spaces)
 
@@ -25,8 +31,8 @@
       '("" "str1" "str1 str2 str3")
       (mapcar (curry #'apply #'concatenate-strings-with-spaces)
 	      '(nil
-		("str1")
-		("str1" "str2" "str3"))))
+          ("str1")
+          ("str1" "str2" "str3"))))
 
 (defun string-case-fun (keyform cases)
   `(cond ,@(mapcar #'(lambda (case)
