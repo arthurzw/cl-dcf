@@ -44,24 +44,25 @@ camelCaseAttr: 1"
 
 
 (defun emit-protobuf-node (node gen)
-  (assert (atom (first node)))
-  (let ((attr-p (and (= (length node) 2)
-                     (atom (second node)))))
-    (if attr-p
-        (emit-protobuf-attr node gen)
-        (progn
-          (emit-list gen
-                     'lower-case (first node)
-                     '("{" t t nil)
-                     'increase-indent
-                     'new-line)
-          (dolist (child (rest node))
-            (emit-protobuf-node child gen))
-          (emit-list gen
-                     'decrease-indent
-                     'new-line
-                     '("}" t t nil)
-                     'new-line)))))
+  (when node
+    (assert (atom (first node)))
+    (let ((attr-p (and (= (length node) 2)
+                       (atom (second node)))))
+      (if attr-p
+          (emit-protobuf-attr node gen)
+          (progn
+            (emit-list gen
+                       'lower-case (first node)
+                       '("{" t t nil)
+                       'increase-indent
+                       'new-line)
+            (dolist (child (rest node))
+              (emit-protobuf-node child gen))
+            (emit-list gen
+                       'decrease-indent
+                       'new-line
+                       '("}" t t nil)
+                       'new-line))))))
 
 (defun emit-protobuf-text (node-list gen)
   (dolist (node node-list)
@@ -87,6 +88,7 @@ second_node {
           (emit-protobuf-text '((:root-node
                                  (:int-attr 76)
                                  (:float-attr 19.76)
+                                 nil
                                  (:string-attr "A")
                                  (:enum-attr :k-enum-value)
                                  (pascal-case::pascal-case-node
