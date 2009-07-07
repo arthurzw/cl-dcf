@@ -4,7 +4,7 @@
 (defclass source-file-generator ()
   ;; Configuration (must not change after initialization).
   ((output-file         :initform *standard-output*  :initarg :output-file)
-   (max-line-width      :initform 80                 :initarg :max-line-width)
+   (max-line-width      :initform 120                :initarg :max-line-width)
    (indent              :initform "  "               :initarg :indent)
    (keyword-overrides   :initform nil                :initarg :keyword-overrides
 			:documentation "A list of pairs (keyword, override) that provide custom
@@ -147,7 +147,7 @@
 (defun symbol->camel-string (symbol)
   (let ((ps (symbol->pascal-string symbol)))
     (setf (elt ps 0)
-	  (char-downcase (elt ps 0)))
+          (char-downcase (elt ps 0)))
     ps))
 
 (export 'symbol->camel-string)
@@ -180,7 +180,7 @@
   (with-slots (keyword-overrides current-col max-line-width
                                  space-required pascal-case upper-case lower-case lower-case_ suppress-wrap) gen
     (progn
-      
+
       ;; Apply suppress-wrap.
       (when suppress-wrap
         (setf may-wrap nil)

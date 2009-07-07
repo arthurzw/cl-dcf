@@ -35,14 +35,14 @@
 
 (defun parse-identifier (parse-state)
   (let* ((form-stream (parse-state-form-stream parse-state))
-	 (x (first form-stream))
-	 (xs (rest form-stream)))
+         (x (first form-stream))
+         (xs (rest form-stream)))
     (when (or (stringp x)
-	      (numberp x)
-	      (keywordp x)
-	      (and (symbolp x) (casing-package-p x)))
+              (numberp x)
+              (keywordp x)
+              (and (symbolp x) (casing-package-p x)))
 	(make-parse-result :form-stream xs
-			   :gen-list (list x))))) ; Can parse 'pascal-string, etc. here too.
+                       :gen-list (list x))))) ; Can parse 'pascal-string, etc. here too.
 
 
 (defun parse-zexp-name (parse-state)
@@ -540,8 +540,8 @@
 	("<" (one-of (group 'open-paren (one-of <+> <->) 'close-paren) <expr>) "-" <expr> ">")
 	("apply" <expr> <arg-list>))
       (list (rule-body-with-assoc :left '<expr> '(<+> <->) '("<" <expr> "-" <expr> ">"))
-	    (rule-body-with-assoc :right '<expr> '(<+> <->) '("<" <expr> "-" <expr> ">"))
-	    (rule-body-with-assoc :left '<expr> '(<apply>) '("apply" <expr> <arg-list>))))
+	        (rule-body-with-assoc :right '<expr> '(<+> <->) '("<" <expr> "-" <expr> ">"))
+	        (rule-body-with-assoc :left '<expr> '(<apply>) '("apply" <expr> <arg-list>))))
 
 
 (defun precedence-rule (form assoc-rule-name assoc equal-precedence-form-list higher-precedence-form-list body)

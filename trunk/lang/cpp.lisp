@@ -20,21 +20,27 @@
   (rule <define> ::= "#define" 'upper-case :name 'suppress-wrap (? :definition) 'new-line) ;; TODO: \-prefixed line breaks (new source-gen feature).
 
   (rule <class> <public.protected.private> <macro-call> ::=
-	'upper-case :macro-name <arg-list> 'semicolon 'new-line)
+        'upper-case :macro-name <arg-list> 'semicolon 'new-line)
   (rule <macro-call> ::= 'upper-case :macro-name <arg-list>)
 
-  (rule <namespace> ::= "namespace" :name 'begin-block 'decrease-indent
+  (rule <namespace> ::= "namespace" 'lower-case :name 'begin-block 'decrease-indent
 	                (* <definition>)
-			'vertical-space
-			'increase-indent 'end-block-no-new-line "// namespace" :name 'new-line)
+                    'vertical-space
+                    'increase-indent 'end-block-no-new-line "// namespace" 'lower-case :name 'new-line)
 
   (rule <using> ::= "using" :namespace (* '("::" nil nil) (one-of :namespace <class-ref>)) 'semicolon 'new-line)
 
   (rule <class-forward> ::=
-	"class" (* (one-of <class-ref>
-			   (group 'pascal-case :class-name))
-		   (list-separator '("::" nil nil)))
-	'semicolon 'new-line)
+        "class" (* (one-of <class-ref>
+                           (group 'pascal-case :class-name))
+                   (list-separator '("::" nil nil)))
+        'semicolon 'new-line)
+
+  (rule <friend> ::=
+        "friend class" (* (one-of <class-ref>
+                                   (group 'pascal-case :class-name))
+                           (list-separator '("::" nil nil)))
+        'semicolon 'new-line)
 
   (nullary-rule <virtual>)
   (nullary-rule <abstract>)
@@ -55,8 +61,8 @@
 
   (rule <struct> <field> ::=
 	(unordered (? <static>)
-		   <type>
-		   :name)
+               <type>
+               :name)
 	'semicolon)
 
   (rule <class> ::=
@@ -68,10 +74,10 @@
 	'end-block-no-new-line 'semicolon 'new-line)
 
   (rule <class> <inherit> ::=
-	(unordered (? <abstract>)
-		   (one-of <public> <protected> <private>)
-		   (* (one-of <class-ref> (group 'pascal-case :base-class-name))
-		      (list-separator '("::" nil nil))))) ;; TODO: -> <class-name> (naked)
+        (unordered (? <abstract>)
+                   (one-of <public> <protected> <private>)
+                   (* (one-of <class-ref> <ns-ref> (group 'pascal-case :base-class-name))
+                      (list-separator '("::" nil nil))))) ;; TODO: -> <class-name> (naked)
 
   (rule <class> <public> ::= 'decrease-indent 'vertical-space " public:" 'increase-indent 'new-line <class-contents>)
   (rule <class> <protected> ::= 'decrease-indent 'vertical-space " protected:" 'increase-indent 'new-line <class-contents>)
@@ -82,6 +88,7 @@
 						<struct>
 						<class>
 						<class-forward>
+                        <friend>
 						<field>
 						<method>
 						<constructor>
@@ -91,15 +98,15 @@
   (rule <class> <public> <field> ::=
 	'new-line
 	(unordered (? <static>)
-		   <type>
-		   'lower-case :name)
+               <type>
+               'lower-case :name)
 	'semicolon)
 
   (rule <class> <protected.private> <field> ::=
 	'new-line
 	(unordered (? <static>)
-		   <type>
-		   'lower-case_ :name)
+               <type>
+               'lower-case_ :name)
 	'semicolon)
 
   (rule <field> ::=
@@ -111,14 +118,14 @@
 		   'new-line))
 
   (rule <class> <public.protected.private> <method> ::=
-	'new-line
-	(unordered (? <static>)
-		   (? <virtual>)
-		   (one-of <return-type> "void")
-		   (group 'pascal-case :name <param-list>)
-		   (? <const>)
-		   (? <volatile>))
-	<class-member-fn-body>)
+        'new-line
+        (unordered (? <static>)
+                   (? <virtual>)
+                   (one-of <return-type> "void")
+                   (group 'pascal-case :name <param-list>)
+                   (? <const>)
+                   (? <volatile>))
+        <class-member-fn-body>)
 
   (rule <method> ::=
 	'vertical-space
@@ -134,17 +141,17 @@
   (rule <class> <public.protected.private> <constructor> ::=
 	'new-line
 	(unordered (? <virtual>)
-		   (? <explicit>)
+               (? <explicit>)
 	           (group 'pascal-case :name)
-		   <param-list>
-		   (? ":" <init> (* 'comma <init>)))
+               <param-list>
+               (? ":" <init> (* 'comma <init>)))
 	<class-member-fn-body>)
 
   (rule <constructor> ::=
 	'vertical-space
 	(unordered (* (one-of <class-ref> (group 'pascal-case :class-name)) (list-separator '("::" nil nil)))
-		   <param-list>
-		   (? ":" <init> (* 'comma <init>)))
+               <param-list>
+               (? ":" <init> (* 'comma <init>)))
 	'begin-block
 	(* <stmt>)
 	'end-block)
@@ -158,19 +165,19 @@
   (rule <destructor> ::=
 	'vertical-space
 	(* (one-of <class-ref>
-		   (group '("~" t nil) 'pascal-case :class-name 'open-paren-no-space 'close-paren))
+               (group '("~" t nil) 'pascal-case :class-name 'open-paren-no-space 'close-paren))
 	   (list-separator '("::" nil nil)))
 	'begin-block
 	(* <stmt>)
 	'end-block)
 
   (rule <class-member-fn-body> (naked) ::= (one-of <null-body>
-						   (group 'begin-block <stmt> (* <stmt>) 'end-block)
-						   'semicolon))
+                                                   (group 'begin-block <stmt> (* <stmt>) 'end-block)
+                                                   'semicolon))
 
   (rule <constructor> <init> ::=
-	(one-of :class-name (* <class-ref> (list-separator '("::" nil nil))))
-	<arg-list>)
+        (one-of :class-name (* <class-ref> (list-separator '("::" nil nil))))
+        <arg-list>)
 
   (rule <init> ::= "=" <expr>)
   (rule <constructor-call> ::= <arg-list>)
@@ -180,9 +187,11 @@
   (rule <type-annotation> (naked) ::= (unordered (? <const>) (? <volatile)))
 
   (rule <type-expr> (naked) ::=
-	(one-of (group 'pascal-case :type-name (? <template>))
-		<class-ref> <ptr> <ref> <field-ref-type>)
-	<type-annotation>)
+        (one-of (group 'pascal-case :type-name (? <template>))
+                (group <class-ref> (? <template>))
+                <ptr> <ref> <ns-ref> <field-ref-type>)
+
+        <type-annotation>)
 
   (rule <field-ref-type> ::=
 	(* <class-ref> '("::" nil nil)) :field-name)
@@ -190,6 +199,7 @@
   (rule <template> ::= '("<" nil nil) (* 'pascal-case <type-expr> (list-separator 'comma)) '(">" nil t))
   (rule <ptr> ::= <type-expr> '("*" nil t) <type-annotation>)
   (rule <ref> ::= <type-expr> '("&" nil t) <type-annotation>)
+  (rule <ns-ref> ::= 'lower-case :ns)
 
   (rule <param-list> (naked) ::=
 	'open-paren-no-space
@@ -204,27 +214,27 @@
 	'close-paren)
 
   (rule <expr> (naked) ::= (one-of (group 'lower-case :value)
-				   <char-literal> <long-char-literal> <string-literal> <long-string-literal>
-				   <array-literal> <class-ref> <class-or-field>
-				   <scope-ref>
-				   <group>
-				   <call> <call-method> <call-static> <call-ptr> <call-this> <macro-call>
-				   <post++> <post--> <array-ref> <field-ref> <field-ref-ptr> <field-ref-this> <field-ref-static>
-				   <++> <--> <positive> <negative> <~> <!> <addr> <deref> <new> <sizeof> <cast>
-				   <member-ref> <member-ref-ptr>
-				   <*> </> <%>
-				   <+> <->
-				   <<<> <>>>
-				   <<> <>> <<=> <>=>
-				   <==> <!=>
-				   <bit-and>
-				   <bit-xor>
-				   <bit-or>
-				   <and>
-				   <or>
-				   <?>
-				   <set> <=> <+=> <-=> <*=> </=> <%=> <bit-and=> <bit-xor=> <bit-or=> <<<=> <>>=>
-				   <progn>))
+                                   <char-literal> <long-char-literal> <string-literal> <long-string-literal>
+                                   <array-literal> <class-ref> <class-or-field>
+                                   <scope-ref>
+                                   <group>
+                                   <call> <call-method> <call-static> <call-ptr> <call-this> <call-template> <macro-call>
+                                   <post++> <post--> <array-ref> <field-ref> <field-ref-ptr> <field-ref-this> <field-ref-static>
+                                   <++> <--> <positive> <negative> <~> <!> <addr> <deref> <new> <sizeof> <cast>
+                                   <member-ref> <member-ref-ptr>
+                                   <*> </> <%>
+                                   <+> <->
+                                   <<<> <>>>
+                                   <<> <>> <<=> <>=>
+                                   <==> <!=>
+                                   <bit-and>
+                                   <bit-xor>
+                                   <bit-or>
+                                   <and>
+                                   <or>
+                                   <?>
+                                   <set> <=> <+=> <-=> <*=> </=> <%=> <bit-and=> <bit-xor=> <bit-or=> <<<=> <>>=>
+                                   <progn>))
 
   (rule <char-literal> ::= '("'" t nil) 'suppress-wrap :value '("'" nil t nil))
   (rule <long-char-literal> ::= '("L'" t nil) 'suppress-wrap :value '("'" nil t nil))
@@ -328,10 +338,16 @@
 
   (rule <call> ::= 'pascal-case :identifier <arg-list>)
   (rule <call-method> ::= <expr> '("." nil nil) 'pascal-case :identifier <arg-list>)
-  (rule <call-static> ::= (one-of (group 'pascal-case :identifier) <class-ref>)
-	                  '("::" nil nil) 'pascal-case :identifier <arg-list>)
+  (rule <call-static> ::=
+        (one-of (group 'pascal-case :identifier) <class-ref>)
+        '("::" nil nil) 'pascal-case :identifier <arg-list>)
   (rule <call-ptr> ::= <expr> '("->" nil nil) 'pascal-case :identifier <arg-list>)
   (rule <call-this> ::= '("this->" t nil) 'pascal-case :identifier <arg-list>)
+  (rule <call-template> ::=
+        (one-of (group 'pascal-case :identifier) <class-ref>)
+        '("::" nil nil) 'pascal-case :identifier
+        <template>
+        <arg-list>)
 
   (rule <null-body> ::= "{}")
 
@@ -346,7 +362,7 @@
 
   (rule <var> ::=
 	(unordered (? <const>) (? <volatile>) (? <static>) (? <extern>) <type>)
-	:name
+	'lower-case :name
 	(? (one-of <init> <constructor-call>))
 	'semicolon)
 
@@ -441,20 +457,20 @@
   (make-instance 'source-file-generator
 		 :output-file file
 		 :keyword-overrides '((:void "void")
-				      (:byte "byte")
-				      (:short "short")
-				      (:int "int")
-				      (:long "long")
-				      (:float "float")
-				      (:double "double")
-				      (:char "char")
-				      (:bool "bool")
-				      (:true "true")
-				      (:false "false")
-				      (:null "NULL")
-				      (:string "string")
-				      (:wstring "wstring")
-				      (:scoped-ptr "scoped_ptr"))))
+                              (:byte "byte")
+                              (:short "short")
+                              (:int "int")
+                              (:long "long")
+                              (:float "float")
+                              (:double "double")
+                              (:char "char")
+                              (:bool "bool")
+                              (:true "true")
+                              (:false "false")
+                              (:null "NULL")
+                              (:string "string")
+                              (:wstring "wstring")
+                              (:scoped-ptr "scoped_ptr"))))
 
 ;;;; Test.
 (define-constant +cpp-test+

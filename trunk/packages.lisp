@@ -8,12 +8,12 @@
   (:shadowing-import-from :com.google.common :comma)
   (:export :?  :compile-language  :parse-program  :generate-sexp  :post-process
 	   :lookup-def  :parent  :id  :env  :read-zexp-file
-     :make-protobuf-text-generator  :emit-protobuf-text
+       :make-protobuf-text-generator  :emit-protobuf-text
 	   :make-xml-generator  :parse-xml-node  :emit-xml-node  :xml-ns-alias  :xml-ns-uri  :xml-tag-case
 	   :def-internal-type  :def-zexp-type  :def-zexp-form  :def-sexp-form  :def-ir-class  :def-prop
 	   :internal-type  :zexp-type  :zexp-form  :sexp-form  :syntax  :end-of-list  :ir-class  :ir-overlay
 	   :local-env  :inherit  :flag  :type  :parse-by-type  :repeating  :optional
-	   :default-value  :slot-name))
+	   :default-value  :slot-name  :accessor))
 
 (defpackage :com.google.catharsis.code-gen.upper-case
   (:nicknames :upper-case))
@@ -41,33 +41,33 @@
 	:com.google.common
 	:cl)
   (:export ::_  ://  :define  :ifndef  :std-include  :include  :define  :macro-call
-	   :namespace  :using  :class-forward
-	   :virtual  :abstract  :explicit  :public  :protected  :private  :static  :const  :volatile  :extern  :inherit
-	   :struct  :field  :class  :inherit  :method  :constructor  :destructor  :init  :constructor-call
-	   :type  :return-type  :template  :ptr  :ref  :param
-	   :char-literal  :long-char-literal  :string-literal  :long-string-literal  :class-ref  :field-ref-type
-	   #|:group|#
-	   :call  :call-method  :call-static  :call-ptr  :call-this
-	   :post++  :post--
-	   :new  :delete  :call  :array-ref  :field-ref  :field-ref-ptr  :field-ref-this  :field-ref-static
-	   :++  :--  :positive  :negative  :~  :!  :addr  :deref  :new  :sizeof  :cast
-	   :member-ref  :member-ref-ptr
-	   :*  :/  :%
-	   :+  :-
-	   :<<  :>>  :>>>
-	   :<  :>  :<=  :>=  :instanceof
-	   :==  :!=
-	   :bit-and  :bit-xor  :bit-or
-	   :and  :or  :?
-	   :set  :=  :+=  :-=  :*=  :/=  :%=  :bit-and=  :bit-xor=  :bit-or=  :<<=  :>>=  :>>>=
-	   :progn
-	   :null-body
-	   :var  :while
-	   :return  :goto  :throw  :break  :continue
-	   :block  :if  :for  :do  :switch  :try  :label
-	   :case  :default
-	   :catch  :finally
-	   :cond)
+           :namespace  :using  :class-forward  :friend
+           :virtual  :abstract  :explicit  :public  :protected  :private  :static  :const  :volatile  :extern  :inherit
+           :struct  :field  :class  :inherit  :method  :constructor  :destructor  :init  :constructor-call
+           :type  :return-type  :template  :ptr  :ref  :ns-ref  :param
+           :char-literal  :long-char-literal  :string-literal  :long-string-literal  :class-ref  :field-ref-type
+           #|:group|#
+           :call  :call-method  :call-static  :call-ptr  :call-this  :call-template
+           :post++  :post--
+           :new  :delete  :call  :array-ref  :field-ref  :field-ref-ptr  :field-ref-this  :field-ref-static
+           :++  :--  :positive  :negative  :~  :!  :addr  :deref  :new  :sizeof  :cast
+           :member-ref  :member-ref-ptr
+           :*  :/  :%
+           :+  :-
+           :<<  :>>  :>>>
+           :<  :>  :<=  :>=  :instanceof
+           :==  :!=
+           :bit-and  :bit-xor  :bit-or
+           :and  :or  :?
+           :set  :=  :+=  :-=  :*=  :/=  :%=  :bit-and=  :bit-xor=  :bit-or=  :<<=  :>>=  :>>>=
+           :progn
+           :null-body
+           :var  :while
+           :return  :goto  :throw  :break  :continue
+           :block  :if  :for  :do  :switch  :try  :label
+           :case  :default
+           :catch  :finally
+           :cond)
   (:shadowing-import-from :com.google.catharsis :?))
 
 (defpackage :com.google.catharsis.java
