@@ -348,8 +348,8 @@
   "Generates code for a macroexpansion routine.
    The output of this function is used in the context established by def-grammar."
   `(defun ,(macro-expand-fn-name macro) (,(macro-form macro))
-    (declare (ignorable ,(macro-form macro)))
-    ,@(macro-body macro)))
+     (declare (ignorable ,(macro-form macro)))
+     ,@(macro-body macro)))
 
 
 (defun has-name (rule)
@@ -363,87 +363,86 @@
   `(defun ,(rule-fn-name rule :parse) (parse-state)
 
     ,(cond ((spath (rule-annotations rule) 'naked)
-	    `(funcall ,(serial-parser (parse-form-list (rule-body rule)))
-	      (make-parse-state :form-stream (parse-state-form-stream parse-state)
-	                        :zexp-name (parse-state-zexp-name parse-state)
-	                        :stack (parse-state-stack parse-state))))
-
-	   (t
-	    `(let* ((form-stream (parse-state-form-stream parse-state))
-		    (x (expand-macros (first form-stream) macro-table))
-		    (xs (rest form-stream)))
-	      (when (and (listp x)
-			 (find (first x) ',(rule-forms rule)))
-		(awhen (funcall ,(serial-parser (parse-form-list (rule-body rule)))
-				,(if (has-name rule)
-				     `(make-parse-state
-				       :form-stream  (append (awhen (get-zexp-value x) (list it))
-						      (get-zexp-rest x))
-				       :zexp-name (get-zexp-name x)
-				       :stack (cons (first x)
-					       (parse-state-stack parse-state)))
-				     `(make-parse-state
-				       :form-stream (rest x)
-				       :stack (cons (first x)
-					       (parse-state-stack parse-state)))))
-		  (unless (parse-result-form-stream it)
-		    (make-parse-result :form-stream xs
-				       :gen-list (parse-result-gen-list it))))))))))
+            `(funcall ,(serial-parser (parse-form-list (rule-body rule)))
+                      (make-parse-state :form-stream (parse-state-form-stream parse-state)
+                                        :zexp-name (parse-state-zexp-name parse-state)
+                                        :stack (parse-state-stack parse-state))))
+           (t
+            `(let* ((form-stream (parse-state-form-stream parse-state))
+                    (x (expand-macros (first form-stream) macro-table))
+                    (xs (rest form-stream)))
+               (when (and (listp x)
+                          (find (first x) ',(rule-forms rule)))
+                 (awhen (funcall ,(serial-parser (parse-form-list (rule-body rule)))
+                                 ,(if (has-name rule)
+                                      `(make-parse-state
+                                        :form-stream  (append (awhen (get-zexp-value x) (list it))
+                                                              (get-zexp-rest x))
+                                        :zexp-name (get-zexp-name x)
+                                        :stack (cons (first x)
+                                                     (parse-state-stack parse-state)))
+                                      `(make-parse-state
+                                        :form-stream (rest x)
+                                        :stack (cons (first x)
+                                                     (parse-state-stack parse-state)))))
+                   (unless (parse-result-form-stream it)
+                     (make-parse-result :form-stream xs
+                                        :gen-list (parse-result-gen-list it))))))))))
 
 
 (defun build-macro-table (macro-form-expand-fn-name-list)
   (let ((mt (make-hash-table)))
     (dolist (m macro-form-expand-fn-name-list)
       (destructuring-bind (form expand-fn-name) m
-	(append1f (gethash form mt) expand-fn-name)))
+        (append1f (gethash form mt) expand-fn-name)))
     mt))
 
 (test "build-macro-table"
       '((foo (expand-foo-1))
-	(bar (expand-bar-1 expand-bar-2)))
+        (bar (expand-bar-1 expand-bar-2)))
       (hashtable->list
        (build-macro-table '((foo expand-foo-1)
-			    (bar expand-bar-1)
-			    (bar expand-bar-2)))))
+                            (bar expand-bar-1)
+                            (bar expand-bar-2)))))
 
 
 (defun expand-macros (form macro-table &optional excluded-rules)
   (flet ((expand-form (x)
-	   (aif (and (listp x)
-		     (first (set-difference (gethash (first x) macro-table)
-					    excluded-rules)))
-		(expand-macros (funcall (symbol-function it) x)
-			       macro-table
-			       (cons it excluded-rules))
-		:not-a-macro)))
+           (aif (and (listp x)
+                     (first (set-difference (gethash (first x) macro-table)
+                                            excluded-rules)))
+                (expand-macros (funcall (symbol-function it) x)
+                               macro-table
+                               (cons it excluded-rules))
+                :not-a-macro)))
     (if (listp form)
-	(reduce #'(lambda (x macroexpansion)
-		    (aif (expand-form x)
-		      (if (eq it :not-a-macro)
-			  (cons x macroexpansion)
-			  (append it macroexpansion))
-		      macroexpansion))
-		form
-		:from-end t
-		:initial-value nil)
-	form)))
+        (reduce #'(lambda (x macroexpansion)
+                    (aif (expand-form x)
+                         (if (eq it :not-a-macro)
+                             (cons x macroexpansion)
+                             (append it macroexpansion))
+                         macroexpansion))
+                form
+                :from-end t
+                :initial-value nil)
+        form)))
 
 (test "expand-macros"
       '(container (class :baz (prop :bar)) (interface :foo))
       (with-defuns ((expand-class-1 (class)
-				    (append (list class) '((interface :foo))))
-		    (expand-class-2 (class)
-				    (list (append class '((prop :bar)))))
-		    (expand-dead-construct (dead-construct)
-					   (declare (ignore dead-construct))
-					   nil)
-		    (expand-prop-1 (prop)
-				   (append '((doc)) (list prop))))
-	(expand-macros '(container (class :baz) (dead-construct))
-		       (build-macro-table '((class expand-class-1)
-					    (class expand-class-2)
-					    (dead-construct expand-dead-construct)
-					    (prop expand-prop-1))))))
+                                    (append (list class) '((interface :foo))))
+                    (expand-class-2 (class)
+                                    (list (append class '((prop :bar)))))
+                    (expand-dead-construct (dead-construct)
+                                           (declare (ignore dead-construct))
+                                           nil)
+                    (expand-prop-1 (prop)
+                                   (append '((doc)) (list prop))))
+        (expand-macros '(container (class :baz) (dead-construct))
+                       (build-macro-table '((class expand-class-1)
+                                            (class expand-class-2)
+                                            (dead-construct expand-dead-construct)
+                                            (prop expand-prop-1))))))
 
 
 (defun build-dte-list (parsed-rules)
@@ -477,35 +476,34 @@
 (defmacro def-grammar (name &body body)
   "Defines a grammar."
   (let* ((*grammar-name* name)
-	 (macroexpanded-body (mapcar #'macroexpand body))
-	 (macros (spath macroexpanded-body 'macro*))
-	 (parsed-macros (maplist #'parse-macro macros))
-	 (macro-list (zip (mapcar #'macro-form parsed-macros)
-			  (mapcar #'macro-expand-fn-name parsed-macros)))
-	 (rules (append (spath macroexpanded-body 'rule*)
-			(spath macroexpanded-body '(progn* rule*))))
-	 (parsed-rules (mapcar #'parse-rule rules)))
+         (macroexpanded-body (mapcar #'macroexpand body))
+         (macros (spath macroexpanded-body 'macro*))
+         (parsed-macros (maplist #'parse-macro macros))
+         (macro-list (zip (mapcar #'macro-form parsed-macros)
+                          (mapcar #'macro-expand-fn-name parsed-macros)))
+         (rules (append (spath macroexpanded-body 'rule*)
+                        (spath macroexpanded-body '(progn* rule*))))
+         (parsed-rules (mapcar #'parse-rule rules)))
     `(progn
-      (let* ((*grammar-name* ',name)
-	     (macro-table (build-macro-table ',macro-list))
-	     (dispatch-table (build-dispatch-table ',(build-dte-list parsed-rules))))
-	,@(mapcar #'macro-fn parsed-macros)
-	,@(mapcar #'parse-fn parsed-rules)
-	(defun ,(gen-symbol nil *grammar-name* :parse-internal) (expected-form parse-state)
-	  (let* ((stack (parse-state-stack parse-state))
-		 (new-stack (cons expected-form stack))
-		 (rule-fn (lookup-dispatch-table new-stack dispatch-table)))
-	    (if rule-fn
-		(funcall rule-fn parse-state)
-		(error "No matching rule."))))
-	(defun ,(gen-symbol nil *grammar-name* :parse) (form)
-	  (,(gen-symbol nil *grammar-name* :parse-internal)
-	    (first form)
-	    (make-parse-state :form-stream (expand-macros (list form) macro-table))))))))
+       (let* ((*grammar-name* ',name)
+              (macro-table (build-macro-table ',macro-list))
+              (dispatch-table (build-dispatch-table ',(build-dte-list parsed-rules))))
+         ,@(mapcar #'macro-fn parsed-macros)
+         ,@(mapcar #'parse-fn parsed-rules)
+         (defun ,(gen-symbol nil *grammar-name* :parse-internal) (expected-form parse-state)
+           (let* ((stack (parse-state-stack parse-state))
+                  (new-stack (cons expected-form stack))
+                  (rule-fn (lookup-dispatch-table new-stack dispatch-table)))
+             (if rule-fn
+                 (funcall rule-fn parse-state)
+                 (error "No matching rule."))))
+         (defun ,(gen-symbol nil *grammar-name* :parse) (form)
+           (,(gen-symbol nil *grammar-name* :parse-internal)
+             (first form)
+             (make-parse-state :form-stream (expand-macros (list form) macro-table))))))))
 
 (export 'def-grammar)
-(dolist (sym '(one-of  unordered  group  ?  *  list-separator
-	       macro  rule  naked  zexp))
+(dolist (sym '(one-of  unordered  group  ?  *  list-separator  macro  rule  naked  zexp))
   (export sym))
 
 

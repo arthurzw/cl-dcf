@@ -368,3 +368,29 @@ we're redefining the constant). This macro does the right thing."
         (2   (2 5 8)))
       (group-by #'(lambda (x) (let ((mod (mod x 3))) (if (= mod 0) nil mod)))
                 (integer-list 0 10)))
+
+
+(defun insert (seq pos &rest items)
+  "Inserts items at position pos in the sequence seq."
+  (concatenate 'list
+               (take pos seq)
+               items
+               (drop pos seq)))
+
+(export 'insert)
+
+(test "insert"
+      '(0 1 2 new items 3 4)
+      (insert '(0 1 2 3 4) 3 'new 'items))
+
+(test "insert-head"
+      '(new items 0 1 2 3 4)
+      (insert '(0 1 2 3 4) 0 'new 'items))
+
+(test "insert-tail"
+      '(0 1 2 3 4 new items)
+      (insert '(0 1 2 3 4) 5 'new 'items))
+
+(test "insert-nil-nil"
+      nil
+      (insert nil 0))
