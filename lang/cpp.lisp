@@ -84,16 +84,16 @@
   (rule <class> <private> ::= 'decrease-indent 'vertical-space " private:" 'increase-indent 'new-line <class-contents>)
 
   (rule <class-contents> (naked) ::= (* (one-of <//>
-						<_>
-						<struct>
-						<class>
-						<class-forward>
-                        <friend>
-						<field>
-						<method>
-						<constructor>
-						<destructor>
-						<macro-call>)))
+                                                <_>
+                                                <struct>
+                                                <class>
+                                                <class-forward>
+                                                <friend>
+                                                <field>
+                                                <method>
+                                                <constructor>
+                                                <destructor>
+                                                <macro-call>)))
 
   (rule <class> <public> <field> ::=
 	'new-line
@@ -113,9 +113,9 @@
 	'vertical-space
 	(unordered <type>
 	           (* (one-of <class-ref> (group 'lower-case :field)) (list-separator '("::" nil nil)))
-		   (? (one-of <init> <constructor-call>))
-		   'semicolon
-		   'new-line))
+               (? (one-of <init> <constructor-call>))
+               'semicolon
+               'new-line))
 
   (rule <class> <public.protected.private> <method> ::=
         'new-line
@@ -130,10 +130,10 @@
   (rule <method> ::=
 	'vertical-space
 	(unordered (one-of <return-type> "void")
-		   (* (one-of <class-ref> (group 'pascal-case :method)) (list-separator '("::" nil nil)))
-		   <param-list>
-		   (? <const>)
-		   (? <volatile>))
+               (* (one-of <class-ref> (group 'pascal-case :method)) (list-separator '("::" nil nil)))
+               <param-list>
+               (? <const>)
+               (? <volatile>))
 	'begin-block
 	(* <stmt>)
 	'end-block)
@@ -336,7 +336,7 @@
     ;; comma
     ((rule <progn> ::= <expr> (* 'comma <expr>))))
 
-  (rule <call> ::= 'pascal-case :identifier <arg-list>)
+  (rule <call> ::= (* <ns-ref> '("::" nil nil)) 'pascal-case :identifier <arg-list>)
   (rule <call-method> ::= <expr> '("." nil nil) 'pascal-case :identifier <arg-list>)
   (rule <call-static> ::=
         (one-of (group 'pascal-case :identifier) <class-ref>)
@@ -441,16 +441,16 @@
   ;; cond: if/else if.../else.
   (macro <cond> ::=
 	 (labels ((rec (remaining-clauses)
-		    (let ((clause (first remaining-clauses)))
-		      (if (eq (first clause) 't)
-			  (second clause)
-			  `(if ,(first clause)
-			    ,(second clause)
-			    ,@(awhen (rest remaining-clauses)
-				     (list (rec it))))))))
+                (let ((clause (first remaining-clauses)))
+                  (if (eq (first clause) 't)
+                      (second clause)
+                      `(cpp:if ,(first clause)
+                               ,(second clause)
+                               ,@(awhen (rest remaining-clauses)
+                                        (list (rec it))))))))
 	   (if (rest cond)
 	       (list (rec (rest cond)))
-	       `((block))))))
+	       `((cpp:block))))))
 
 
 (defun make-cpp-source-generator (&optional (file *standard-output*))
