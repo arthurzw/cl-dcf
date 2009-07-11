@@ -184,22 +184,19 @@
 
   (rule <type> ::= <type-expr>)
   (rule <return-type> ::= <type-expr>)
-  (rule <type-annotation> (naked) ::= (unordered (? <const>) (? <volatile)))
+  (rule <type-annotation> (naked) ::= (one-of <const> <volatile))
 
   (rule <type-expr> (naked) ::=
         (one-of (group 'pascal-case :type-name (? <template>))
                 (group <class-ref> (? <template>))
                 <ptr> <ref> <ns-ref> <field-ref-type>)
+        (* <type-annotation>))
 
-        <type-annotation>)
-
-  (rule <field-ref-type> ::=
-	(* <class-ref> '("::" nil nil)) :field-name)
-
-  (rule <template> ::= '("<" nil nil) (* 'pascal-case <type-expr> (list-separator 'comma)) '(">" nil t))
-  (rule <ptr> ::= <type-expr> '("*" nil t) <type-annotation>)
-  (rule <ref> ::= <type-expr> '("&" nil t) <type-annotation>)
+  (rule <template> ::= '("<" nil nil) (* <type-expr> (list-separator 'comma)) '(">" nil t))
+  (rule <ptr> ::= <type-expr> '("*" nil t) (* <type-annotation>))
+  (rule <ref> ::= <type-expr> '("&" nil t) (* <type-annotation>))
   (rule <ns-ref> ::= 'lower-case :ns)
+  (rule <field-ref-type> ::= (* <class-ref> '("::" nil nil)) :field-name)
 
   (rule <param-list> (naked) ::=
 	'open-paren-no-space
