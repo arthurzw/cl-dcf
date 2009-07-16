@@ -3,8 +3,8 @@
 (def-grammar cpp
 
   (rule <definition> (naked) ::= (one-of <_> <//> <define> <ifndef> <std-include> <include> <define> <macro-call>
-					 <namespace> <using> <class-forward> <stmt>
-					 <class> <field> <method> <constructor> <destructor> <var>))
+                                         <namespace> <using> <class-forward> <stmt>
+                                         <class> <field> <method> <constructor> <destructor> <var>))
 
   (rule <_> ::= 'vertical-space)
   (rule <//> ::= "//" (* :comment-string) 'new-line)
@@ -125,6 +125,7 @@
                    (group 'pascal-case :name <param-list>)
                    (? <const>)
                    (? <volatile>))
+        (? <abstract>)
         <class-member-fn-body>)
 
   (rule <method> ::=
@@ -170,6 +171,8 @@
 	'begin-block
 	(* <stmt>)
 	'end-block)
+
+  (rule <class> <public.protected.private> <method> <abstract> ::= "= 0")
 
   (rule <class-member-fn-body> (naked) ::= (one-of <null-body>
                                                    (group 'begin-block <stmt> (* <stmt>) 'end-block)
@@ -465,6 +468,7 @@
                               (:true "true")
                               (:false "false")
                               (:null "NULL")
+                              (:size-t "size_t")
                               (:string "string")
                               (:wstring "wstring")
                               (:scoped-ptr "scoped_ptr"))))
