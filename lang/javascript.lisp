@@ -352,7 +352,7 @@
      (constructor
       (var :counter-value
 	   (set (field-ref-this :counter-value)
-		(call (new :integer-type) :create-value 0))))
+		(call (new :integer-type) :create-value 1))))
      (method :create (params :dom-parent)
       (call (field-ref-this :horizontal-layout) :create :dom-parent)
       (set (field-ref-this :horizontal-layout :parent) :this)))
