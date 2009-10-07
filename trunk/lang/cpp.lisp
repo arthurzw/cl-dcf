@@ -346,7 +346,7 @@
   (rule <call-this> ::= '("this->" t nil) 'pascal-case :identifier <arg-list>)
   (rule <call-template> ::=
         (one-of (group 'pascal-case :identifier) <class-ref>)
-        '("::" nil nil) 'pascal-case :identifier
+        (? '("::" nil nil) 'pascal-case :identifier)
         <template>
         <arg-list>)
 
