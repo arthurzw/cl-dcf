@@ -2,9 +2,9 @@
 
 (def-grammar cpp
 
-    (rule <definition> (naked) ::= (one-of <_> <//> <define> <ifndef> <std-include> <include> <define> <macro-call>
-                                           <namespace> <using> <class-forward> <stmt>
-                                           <class> <field> <method> <constructor> <destructor> <var>))
+  (rule <definition> (naked) ::= (one-of <_> <//> <define> <ifndef> <std-include> <include> <define> <macro-call>
+                                         <namespace> <using> <class-forward> <stmt>
+                                         <class> <field> <method> <constructor> <destructor> <var> <enum>))
 
   (rule <_> ::= 'vertical-space)
   (rule <//> ::= "//" (* :comment-string) 'new-line)
@@ -65,6 +65,15 @@
                    :name)
         'semicolon)
 
+  (rule <enum> ::=
+        'vertical-space "enum" 'pascal-case :name
+        'begin-block
+        (* (group :value (? <init>) 'comma 'new-line))
+        'end-block-no-new-line 'semicolon 'new-line)
+
+  (rule <enum> <init> ::=
+        "=" :value)
+
   (rule <class> ::=
         'vertical-space "class"
         (* (one-of <class-ref> (group 'pascal-case :class-name)) (list-separator '("::" nil nil)))
@@ -93,7 +102,8 @@
                                                 <method>
                                                 <constructor>
                                                 <destructor>
-                                                <macro-call>)))
+                                                <macro-call>
+                                                <enum>)))
 
   (rule <class> <public> <field> ::=
         'new-line
