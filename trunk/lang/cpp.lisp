@@ -255,6 +255,8 @@
   (rule <class-ref> ::= <type-expr> (* '("::" nil nil) <type-expr>))
   (rule <class-or-field> (naked) ::= (one-of (group 'lower-case :identifier) <class-ref>))
 
+  (rule <array-size> ::= (* '("[" nil nil) <expr> '("]" nil t)))
+
   (precedence-rules <expr>
 
                     ;; scope
@@ -281,7 +283,7 @@
                      (rule <!> (assoc :right) ::= '("!" t nil) <expr>)
                      (rule <addr> (assoc :right) ::= '("&" t nil) <expr>)
                      (rule <deref> (assoc :right) ::= '("*" t nil) <expr>)
-                     (rule <new> (assoc :right) ::= "new" <type-expr> <arg-list>)
+                     (rule <new> (assoc :right) ::= "new" <type-expr> (one-of <arg-list> <array-size>))
                      (rule <sizeof> (assoc :right) ::= "sizeof" <expr>)
                      (rule <cast> (assoc :right) ::= 'open-paren <type-expr> 'close-paren <expr>))
 
