@@ -350,7 +350,7 @@
                     ((rule <progn> ::= <expr> (* 'comma <expr>))))
 
   (rule <call> ::= (* <ns-ref> '("::" nil nil)) 'pascal-case :identifier <arg-list>)
-  (rule <call-method> ::= <expr> '("." nil nil) 'pascal-case :identifier <arg-list>)
+  (rule <call-method> ::= <expr> '("." nil nil) 'pascal-case :identifier (? <template>) <arg-list>)
   (rule <call-static> ::=
         (one-of (group 'pascal-case :identifier) <class-ref>)
         '("::" nil nil) 'pascal-case :identifier <arg-list>)
