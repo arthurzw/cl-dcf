@@ -272,7 +272,10 @@
                      (rule <field-ref> ::= <expr> '("." nil nil) <class-or-field> (* '("." nil nil) <class-or-field>))
                      (rule <field-ref-ptr> ::= <expr> '("->" nil nil) <class-or-field> (* '("->" nil nil) <class-or-field>))
                      (rule <field-ref-this> ::= '("this->" t nil) <class-or-field>)
-                     (rule <field-ref-static> ::= (* <class-ref> '("::" nil nil)) <class-or-field>))
+                     (rule <field-ref-static> ::= (* <class-ref> '("::" nil nil)) <class-or-field>)
+                     (rule <call-method> ::= <expr> '("." nil nil) 'pascal-case :identifier (? <template>) <arg-list>)
+                     (rule <call-ptr> ::= <expr> '("->" nil nil) 'pascal-case :identifier <arg-list>)
+                     (rule <call-this> ::= '("this->" t nil) 'pascal-case :identifier <arg-list>))
 
                     ;; unary
                     ((rule <++> (assoc :right) ::= '("++" t nil) <expr>)
@@ -350,12 +353,9 @@
                     ((rule <progn> ::= <expr> (* 'comma <expr>))))
 
   (rule <call> ::= (* <ns-ref> '("::" nil nil)) 'pascal-case :identifier <arg-list>)
-  (rule <call-method> ::= <expr> '("." nil nil) 'pascal-case :identifier (? <template>) <arg-list>)
   (rule <call-static> ::=
         (one-of (group 'pascal-case :identifier) <class-ref>)
         '("::" nil nil) 'pascal-case :identifier <arg-list>)
-  (rule <call-ptr> ::= <expr> '("->" nil nil) 'pascal-case :identifier <arg-list>)
-  (rule <call-this> ::= '("this->" t nil) 'pascal-case :identifier <arg-list>)
   (rule <call-template> ::=
         (one-of (group 'pascal-case :identifier) <class-ref>)
         '("::" nil nil) 'pascal-case :identifier
