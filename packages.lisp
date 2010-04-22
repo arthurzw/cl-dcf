@@ -48,7 +48,7 @@
            :char-literal  :long-char-literal  :string-literal  :long-string-literal  :class-ref  :field-ref-type
            #|:group|#
            :call  :call-method  :call-static  :call-ptr  :call-this  :call-template
-           :static-cast  :dynamic-cast  :const-cast
+           :static-cast  :dynamic-cast  :const-cast  :reinterpret-cast
            :post++  :post--
            :new  :delete  :call  :array-ref  :array-size  :field-ref  :field-ref-ptr  :field-ref-this  :field-ref-static
            :++  :--  :positive  :negative  :~  :!  :addr  :deref  :new  :sizeof  :cast

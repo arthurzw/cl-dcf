@@ -229,7 +229,7 @@
                                    <scope-ref>
                                    <group>
                                    <call> <call-method> <call-static> <call-ptr> <call-this> <call-template> <macro-call>
-                                   <static-cast> <dynamic-cast> <const-cast>
+                                   <static-cast> <dynamic-cast> <const-cast> <reinterpret-cast>
                                    <post++> <post--> <array-ref> <field-ref> <field-ref-ptr> <field-ref-this> <field-ref-static>
                                    <++> <--> <positive> <negative> <~> <!> <addr> <deref> <new> <sizeof> <cast>
                                    <member-ref> <member-ref-ptr>
@@ -365,6 +365,7 @@
   (rule <static-cast> ::= '("static_cast<" t nil) <type-expr> '(">" nil nil) <arg-list>)
   (rule <dynamic-cast> ::= '("dynamic_cast<" t nil) <type-expr> '(">" nil nil) <arg-list>)
   (rule <const-cast> ::= '("const_cast<" t nil) <type-expr> '(">" nil nil) <arg-list>)
+  (rule <reinterpret-cast> ::= '("reinterpret_cast<" t nil) <type-expr> '(">" nil nil) <arg-list>)
 
   (rule <null-body> ::= "{}")
 
