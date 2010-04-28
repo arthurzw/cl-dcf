@@ -388,7 +388,7 @@
 
   (rule <_> ::= 'vertical-space)
 
-  (rule <return> ::= "return" <expr>)
+  (rule <return> ::= "return" (? <expr>))
   (rule <goto> ::= "goto" 'pascal-case :label)
   (rule <throw> ::= "throw" <expr>)
   (rule <break> ::= "break" (? 'pascal-case :label))
